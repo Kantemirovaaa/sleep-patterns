@@ -1,11 +1,31 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import requests
 import seaborn as sns
 
+def fetch_all_data(batch_size=100):
+    """
+    Fetch the entire dataset from the REST API.
+    """
+    start = 0
+    API_URL = "http://195.91.221.96:55556"
+    all_data = []
 
+    while True:
+        response = requests.get(f"{API_URL}/data", params={"start": start, "limit": batch_size})
+        response.raise_for_status()
+        data_batch = response.json()
+
+        if not data_batch:
+            break
+
+        all_data.extend(data_batch)
+        start += batch_size
+
+    return pd.DataFrame(all_data)
 def load_data():
-    df = pd.read_csv("./data/student_sleep_patterns.csv")
-
+    #df = pd.read_csv("./data/student_sleep_patterns.csv")
+    df = fetch_all_data(100)
     try:
         df['Study_Hours'] = df['Study_Hours'] * 60
 
